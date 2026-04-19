@@ -20,7 +20,8 @@ const {data,isError,isLoading}=useQuery({
 
 const {data:user}=useQuery({
     queryKey:["User"],
-    queryFn:CurrentUser
+    queryFn:CurrentUser,
+    staleTime:10000,
 })
 
 

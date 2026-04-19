@@ -1,11 +1,42 @@
-import React from "react";
+import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import cartService from "../AppWrite/CartService";
+import toast from "react-hot-toast";
+import {UseContextApi} from "../Context/UseContextApi"
+import authService from "../AppWrite/auth";
 
 const Card = ({ product }) => {
-  const navigate=useNavigate()
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const {user}=useContext(UseContextApi)
+
+  const Carthandler = async (e) => {
+    e.stopPropagation();
+    setLoading(true);
+    const toastId = toast.loading("Adding to cart...");
+
+    try {
+      const response = await cartService.addToCart({...product,quantity:1},user.targets[0].userId);
+      if (response) {
+        toast.success(`${product.title} added!`, { id: toastId });
+      }
+    } catch (error) {
+      console.log(error)
+      toast.error("Could not add to cart", { id: toastId });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  
+
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-xl dark:bg-slate-900 dark:shadow-none dark:ring-1 dark:ring-slate-800">
-      <div className="relative aspect-[4/3] w-full overflow-hidden" onClick={()=>navigate(`Products_details/${product.title}/${product.id}`)}>
+      
+      <div 
+        className="relative aspect-[4/3] w-full overflow-hidden cursor-pointer" 
+        onClick={() => navigate(`Products_details/${product.title}/${product.id}`)}
+      >
         <img
           src={product.thumbnail}
           alt={product.title}
@@ -34,8 +65,15 @@ const Card = ({ product }) => {
             ${product.price}
           </span>
 
-          <button className="rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 hover:bg-slate-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:px-5 sm:text-sm" onClick={()=>navigate()}>
-            Add to Cart
+          <button 
+            disabled={loading}
+            className="flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2 text-xs font-semibold text-white transition-all active:scale-95 hover:bg-slate-700 disabled:opacity-70 disabled:cursor-not-allowed dark:bg-emerald-600 dark:hover:bg-emerald-500 sm:px-5 sm:text-sm" 
+            onClick={Carthandler}
+          >
+            {loading ? (
+              <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+            ) : null}
+            {loading ? "Adding..." : "Add to Cart"}
           </button>
         </div>
       </div>

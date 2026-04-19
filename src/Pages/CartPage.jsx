@@ -1,13 +1,56 @@
-import React, { useState,  } from "react";
+import React, { useContext,  useState,  } from "react";
 import CartItem from "../Cart/CartItem";
 import OrderSummary from "../Cart/OrderSummary";
+import { useQuery, useQueryClient,useMutation} from "@tanstack/react-query";
+import cartService from "../AppWrite/CartService";
+import { UseContextApi } from "../Context/UseContextApi";
+
+
 
 const CartPage = () => {
   const [cartItems, setCartItems] = useState([]); // Fetch this from your CartService
+  const {user}=useContext(UseContextApi)
+const queryClient=useQueryClient()
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  console.log(subtotal)
   const discount = subtotal > 100 ? 10.0 : 0;
   const delivery = subtotal > 0 ? 5.0 : 0;
+const {data}=useQuery({
+  queryKey:['items',user?.$id],
+  queryFn:async()=>{
+    
+    console.log("staring")
+   const res= await cartService.getUserCart(user?.$id);
+   console.log("ending..")
+   setCartItems(res.documents || [])
+   return res
+  },
+enabled:!!user?.$id,
+} )
+
+
+const { mutate: updateQty, isPending } = useMutation({
+  mutationFn: async ({ productId, newQty}) => {
+    console.log(typeof(newQty),newQty)
+    if (newQty < 1) throw new Error("Invalid Quantity");
+    return await cartService.updateQuantityByProductId(productId, newQty);
+  },
+  onSuccess: () => {
+    queryClient.invalidateQueries({ queryKey: ['cartItem'] });
+  },
+  onError: (error) => {
+    console.error(error.message);
+  }
+});
+
+const onUpdateQty = (productId, newQty) => {
+  if (newQty < 1) return;
+  updateQty({ productId, newQty });
+};
+
+
+
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
@@ -26,7 +69,7 @@ const CartPage = () => {
                 <CartItem 
                   key={item.$id} 
                   item={item} 
-                  onUpdateQty={() => {}} // Connect to CartService.updateQuantity
+                  onUpdateQty={() => {onUpdateQty(item)}} // Connect to CartService.updateQuantity
                   onRemove={() => {}}    // Connect to CartService.removeItem
                 />
               ))

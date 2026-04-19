@@ -6,10 +6,25 @@ class ProfileService {
     client;
     databases;
     dbId = confi.Database_id;
+    colId=confi.profile_collection
 
     constructor() {
         this.client = AppWriteConfig;
         this.databases = new Databases(this.client);
+    }
+
+    async createProfile(user)
+    {
+        try {
+            return await this.databases.createDocument(this.dbId,this.colId,ID.unique(),{
+                name:user.name,
+                email:user.email,
+                userId:user.$id
+            })
+        } catch (error) {
+            console.log(error)
+            
+        }
     }
 
     async updateProfile(userId, data) {
@@ -41,3 +56,4 @@ class ProfileService {
 
 const profileService = new ProfileService();
 export default profileService;
+

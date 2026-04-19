@@ -15,14 +15,14 @@ const CartItem = ({ item, onUpdateQty, onRemove }) => {
 
       <div className="flex items-center bg-slate-100 dark:bg-slate-800 rounded-lg p-1">
         <button 
-          onClick={() => onUpdateQty(item.$id, item.quantity - 1)}
+          onClick={() => onUpdateQty(item.productId, Number(item.quantity - 1))}
           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
         >
           <Minus size={16} className="text-slate-600 dark:text-slate-300" />
         </button>
         <span className="px-4 font-bold text-slate-900 dark:text-white">{item.quantity}</span>
         <button 
-          onClick={() => onUpdateQty(item.$id, item.quantity + 1)}
+          onClick={() => onUpdateQty(item.productId, Number(item.quantity + 1))}
           className="p-1 hover:bg-white dark:hover:bg-slate-700 rounded-md transition-colors"
         >
           <Plus size={16} className="text-slate-600 dark:text-slate-300" />

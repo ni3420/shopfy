@@ -1,5 +1,6 @@
 import { Account, ID } from "appwrite";
 import { AppWriteConfig } from "./AppwriteConfig";
+import ProfileService from "./ProfileService"
 
 class AuthService {
     client;
@@ -18,7 +19,8 @@ class AuthService {
                 password,
                 name
             );
-            if (userAccount) {
+            if (userAccount) {        
+                await ProfileService.createProfile(userAccount)
                 return this.login({ email, password });
             }
             return userAccount;
@@ -31,6 +33,7 @@ class AuthService {
     async login({ email, password }) {
         try {
             return await this.account.createEmailPasswordSession(email, password);
+            
         } catch (error) {
             console.error("Appwrite service :: login :: error", error);
             throw error;
@@ -43,7 +46,7 @@ class AuthService {
         } catch (error) {
             console.error("Appwrite service :: getCurrentUser :: error", error);
         }
-        return null;
+        
     }
 
     async logout() {

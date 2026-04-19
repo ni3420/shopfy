@@ -9,7 +9,7 @@ export const confi={
     wishlist_collection:String(import.meta.env.wislist_collection),
     products_collection:String(import.meta.env.VITE_PRODUCTS_COLLECTION),
     cart_collection:String(import.meta.env.VITE_CART_COLLECTION),
-    profile_collection:String(import.meta.env.profile_collection),
+    profile_collection:String(import.meta.env.VITE_PROFILE_COLLECTION),
 
 
 }

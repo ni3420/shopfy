@@ -1,16 +1,19 @@
 import { Databases, Query } from "appwrite";
 import { AppWriteConfig } from "./AppwriteConfig";
+import { confi } from "../confi/confi";
 
 class ProductService {
     client;
     databases;
-    dbId = "YOUR_DATABASE_ID";
-    colId = "products";
+    dbId = confi.Database_id;
+    colId = confi.products_collection;
 
     constructor() {
         this.client = AppWriteConfig;
         this.databases = new Databases(this.client);
     }
+
+
 
     async getAllProducts() {
         try {
