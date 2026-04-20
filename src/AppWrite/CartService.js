@@ -44,7 +44,7 @@ class CartService {
         }
     }
 
-async updateQuantityByProductId(productId="3", newQty) {
+async updateQuantityByProductId(productId, newQty) {
     try {
         // 1. Find the document with the matching productId
         const response = await this.databases.listDocuments(
@@ -56,14 +56,10 @@ async updateQuantityByProductId(productId="3", newQty) {
         if (response.documents.length === 0) {
             throw new Error("Product not found in cart");
         }
-        if(response)
-        {
-            console.log(response)
-        }
+        
 
         // 2. Get the Appwrite Document ID ($id)
         const documentId = response.documents[0].$id;
-        console.log(documentId)
 
         // 3. Update using the internal Document ID
         return await this.databases.updateDocument(
@@ -72,20 +68,44 @@ async updateQuantityByProductId(productId="3", newQty) {
             documentId,
             { quantity: newQty }
         );
+        
     } catch (error) {
         console.error("Service :: updateByProductId :: error", error);
         throw error;
     }
 }
-    async removeItem(documentId) {
-        try {
-            await this.databases.deleteDocument(this.dbId, this.colId, documentId);
-            return true;
-        } catch (error) {
-            console.log("Appwrite Service :: removeItem :: error", error);
-            return false;
-        }
+    async removeByProductId(productId) {
+    try {
+        const response = await this.databases.listDocuments(
+            this.dbId,
+            this.colId,
+            [Query.equal("productId", productId)]
+        );
+
+        if (response.documents.length === 0) return null;
+
+        const documentId = response.documents[0].$id;
+
+        return await this.databases.deleteDocument(
+            this.dbId,
+            this.colId,
+            documentId
+        );
+    } catch (error) {
+        console.error("Service :: removeByProductId :: error", error);
+        throw error;
     }
+}
+
+async listProduct()
+{
+    try {
+        return await this.databases.listDocuments(this.dbId,this.colId)
+    } catch (error) {
+        console.log(error)
+        
+    }
+}
 }
 
 const cartService = new CartService();

@@ -1,17 +1,36 @@
 import React, { useContext, useState,  } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { UseContextApi } from '../Context/UseContextApi';
 import Related_Products from './Related_Products';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import cartService from '../AppWrite/CartService';
+import toast from "react-hot-toast"
+import ReviewsSection from './Reviews_page';
 
 const ProductDetails = () => {
     const { id } = useParams();
-    const data = useContext(UseContextApi);
+    const {data,user} = useContext(UseContextApi);
     const [mainImage, setMainImage] = useState('');
+    const queryClient=useQueryClient()
 
-    const product = data?.data?.products?.find((p) => p.id === Number(id));
+     const {data:items}=useQuery({
+    queryKey:["items",user?.$id],
+    queryFn:async()=>{
+      const res=await cartService.getUserCart(user?.$id)
+      return res.documents || []
 
+    },
+    enabled:!!user?.$id
+  })
+  const navigate=useNavigate()
+
+    const product = data?.products?.find((p) => p.id === Number(id));
    
-    if (!data?.data) {
+// console.log(items)
+// const finder=items?.find((p)=>p.productId==product.id)
+// console.log(finder)
+
+    if (!data) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white dark:bg-slate-950">
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
@@ -26,6 +45,57 @@ const ProductDetails = () => {
             </div>
         );
     }
+
+  const BuyNow=async()=>{
+      if (!user) {
+    toast.error("Please login to buy the Product");
+    
+    
+    navigate("/login", { state: { from: window.location.pathname } });
+    return;
+    
+  }
+  else{
+    navigate("/address", { state: { from: window.location.pathname } });
+    return;
+  }
+
+  }
+
+ 
+  const Carthandler = async (e) => {
+    e.stopPropagation();
+     if (!user) {
+    toast.error("Please login to add items to cart");
+    
+    
+    navigate("/login", { state: { from: window.location.pathname } });
+    return;
+  }
+    const isDuplicate = items.find((items) => items.productId == product.id);
+
+    if (isDuplicate) {
+        toast.error("Item already in cart");
+        return;
+    }
+
+    const toastId = toast.loading("Adding to cart...");
+
+    try {
+        const response = await cartService.addToCart(
+            { ...product, quantity: 1 },
+            user?.$id
+        );
+
+        if (response) {
+            toast.success(`${product.title} added!`, { id: toastId });
+            queryClient.invalidateQueries({ queryKey: ["items"] });
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("Could not add to cart", { id: toastId });
+    } 
+};
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
@@ -96,10 +166,10 @@ const ProductDetails = () => {
                             </div>
 
                             <div className="flex flex-col sm:flex-row gap-4">
-                                <button className="flex-1 bg-slate-900 dark:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all active:scale-[0.98]">
+                                <button className="flex-1 bg-slate-900 dark:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all active:scale-[0.98]" onClick={Carthandler}>
                                     Add to Cart
                                 </button>
-                                <button className="flex-1 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all">
+                                <button className="flex-1 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" onClick={BuyNow}>
                                     Buy Now
                                 </button>
                             </div>
@@ -121,6 +191,7 @@ const ProductDetails = () => {
             </div>
 
             <Related_Products currentProduct={product.category}/>
+            <ReviewsSection reviews={product.reviews}/>
         </div>
     );
 };

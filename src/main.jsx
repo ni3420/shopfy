@@ -5,6 +5,7 @@ import App from './App.jsx'
 import UseContextApiProvider from './Context/UseContextApiProvider.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 const queryclient=new QueryClient()
 
 createRoot(document.getElementById('root')).render(
@@ -15,7 +16,7 @@ createRoot(document.getElementById('root')).render(
       <UseContextApiProvider>
     <App />
 
-
+<ReactQueryDevtools initialIsOpen={false}/>
     </UseContextApiProvider>
     </QueryClientProvider>
     </BrowserRouter>

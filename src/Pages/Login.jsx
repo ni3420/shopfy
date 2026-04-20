@@ -9,10 +9,12 @@ import toast from "react-hot-toast";
 import Input from "../Components/Input.jsx";
 import Button from "../Components/Button";
 import authService from "../AppWrite/auth";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const queryClient=useQueryClient()
 
   const {
     register,
@@ -28,6 +30,8 @@ const Login = () => {
       const session = await authService.login(data);
       if (session) {
         toast.success("Welcome back!");
+        queryClient.invalidateQueries({queryKey:["User"]})
+        
         navigate("/");
       }
     } catch (error) {

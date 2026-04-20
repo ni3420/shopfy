@@ -1,41 +1,84 @@
 import React, { useContext, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import cartService from "../AppWrite/CartService";
 import toast from "react-hot-toast";
 import {UseContextApi} from "../Context/UseContextApi"
-import authService from "../AppWrite/auth";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 const Card = ({ product }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const queryClient=useQueryClient()
   const {user}=useContext(UseContextApi)
+  const {data}=useQuery({
+    queryKey:["item",user?.$id],
+    queryFn:async()=>{
+      const res=await cartService.getUserCart(user?.$id)
+      return res.documents
+
+    },
+    enabled:!!user?.$id
+  })
+//   const finder=data?.find((items)=>items.productId===product.id)
+// console.log(finder)
+
+ 
 
   const Carthandler = async (e) => {
+
     e.stopPropagation();
+    if (!user) {
+    toast.error("Please login to add items to cart");
+    
+    
+    navigate("/login", { state: { from: window.location.pathname } });
+    return;
+  }
+    
+    const isDuplicate = data.find((items) => items.productId == product.id);
+    
+    if (isDuplicate) {
+        toast.error("Item already in cart");
+        return;
+    }
+
     setLoading(true);
     const toastId = toast.loading("Adding to cart...");
 
     try {
-      const response = await cartService.addToCart({...product,quantity:1},user.targets[0].userId);
-      if (response) {
-        toast.success(`${product.title} added!`, { id: toastId });
-      }
-    } catch (error) {
-      console.log(error)
-      toast.error("Could not add to cart", { id: toastId });
-    } finally {
-      setLoading(false);
-    }
-  };
+        const response = await cartService.addToCart(
+            { ...product, quantity: 1 },
+            user?.$id
+        );
 
+        if (response) {
+            toast.success(`${product.title} added!`, { id: toastId });
+            queryClient.invalidateQueries({ queryKey: ["item"] });
+        }
+    } catch (error) {
+        console.error(error);
+        toast.error("Could not add to cart", { id: toastId });
+    } finally {
+        setLoading(false);
+    }
+};
+
+const showItems = () => {
+    navigate(`/Products_details/${product.category}/${product.id}`);
+    window.scrollTo({
+      top,
+      behavior:"smooth"
+    })
+
+}
   
 
   return (
     <article className="group flex flex-col overflow-hidden rounded-2xl bg-white shadow-md transition-all duration-300 hover:shadow-xl dark:bg-slate-900 dark:shadow-none dark:ring-1 dark:ring-slate-800">
       
       <div 
-        className="relative aspect-[4/3] w-full overflow-hidden cursor-pointer" 
-        onClick={() => navigate(`Products_details/${product.title}/${product.id}`)}
+        className="relative aspect-4/3 w-full overflow-hidden cursor-pointer" 
+        onClick={showItems}
       >
         <img
           src={product.thumbnail}

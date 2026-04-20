@@ -6,7 +6,6 @@ const Related_Products = ({ currentProduct }) => {
     const data = useContext(UseContextApi);
 
     const related = data?.data?.products.filter((p) => p.category === currentProduct ) || []
-    console.log(related)
 
     if (related?.length === 0) return null;
 

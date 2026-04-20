@@ -4,7 +4,7 @@ const Input = ({
     label, 
     type = "text", 
     className = "", 
-    error = "", 
+    error = "",
     ...props 
 }, ref) => {
     const id = useId();

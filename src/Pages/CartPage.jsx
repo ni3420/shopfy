@@ -8,39 +8,47 @@ import { UseContextApi } from "../Context/UseContextApi";
 
 
 const CartPage = () => {
-  const [cartItems, setCartItems] = useState([]); // Fetch this from your CartService
+  const [cartItems, setCartItems] = useState([]); // 
   const {user}=useContext(UseContextApi)
 const queryClient=useQueryClient()
 
   const subtotal = cartItems.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  console.log(subtotal)
-  const discount = subtotal > 100 ? 10.0 : 0;
+  const discount = subtotal > 10 ? 10.0 : 0;
   const delivery = subtotal > 0 ? 5.0 : 0;
 const {data}=useQuery({
-  queryKey:['items',user?.$id],
+  queryKey:['cartItem',user?.$id],
   queryFn:async()=>{
     
-    console.log("staring")
    const res= await cartService.getUserCart(user?.$id);
-   console.log("ending..")
    setCartItems(res.documents || [])
    return res
   },
 enabled:!!user?.$id,
 } )
 
+const { mutate: updateQty } = useMutation({
+  mutationFn: ({ productId, newQty }) => 
+    cartService.updateQuantityByProductId(productId, newQty),
+  
+  onMutate: async ({ productId, newQty }) => {
+    await queryClient.cancelQueries({ queryKey: ['cartItem'] });
+    const previousCart = queryClient.getQueryData(['cartItem']);
 
-const { mutate: updateQty, isPending } = useMutation({
-  mutationFn: async ({ productId, newQty}) => {
-    console.log(typeof(newQty),newQty)
-    if (newQty < 1) throw new Error("Invalid Quantity");
-    return await cartService.updateQuantityByProductId(productId, newQty);
+    queryClient.setQueryData(['cartItem'], (old) => 
+      old?.map((item) => 
+        item.productId === productId ? { ...item, quantity: newQty } : item
+      )
+    );
+
+    return { previousCart };
   },
-  onSuccess: () => {
+
+  onError: (err, variables, context) => {
+    queryClient.setQueryData(['cartItem'], context.previousCart);
+  },
+
+  onSettled: () => {
     queryClient.invalidateQueries({ queryKey: ['cartItem'] });
-  },
-  onError: (error) => {
-    console.error(error.message);
   }
 });
 
@@ -49,6 +57,29 @@ const onUpdateQty = (productId, newQty) => {
   updateQty({ productId, newQty });
 };
 
+
+const { mutate: removeItem } = useMutation({
+  mutationFn: (productId) => cartService.removeByProductId(productId),
+  
+  onMutate: async (productId) => {
+    await queryClient.cancelQueries({ queryKey: ['cartItem'] });
+    const previousCart = queryClient.getQueryData(['cartItem']);
+
+    queryClient.setQueryData(['cartItem'], (old) => 
+      old?.filter((item) => item.productId !== productId)
+    );
+
+    return { previousCart };
+  },
+
+  onError: (err, variables, context) => {
+    queryClient.setQueryData(['cartItem'], context.previousCart);
+  },
+
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ['cartItem'] });
+  }
+});
 
 
 
@@ -63,14 +94,14 @@ const onUpdateQty = (productId, newQty) => {
         </header>
 
         <div className="flex flex-col lg:flex-row gap-8">
-          <div className="flex-[2]">
+          <div className="flex-2">
             {cartItems.length > 0 ? (
               cartItems.map((item) => (
                 <CartItem 
                   key={item.$id} 
                   item={item} 
-                  onUpdateQty={() => {onUpdateQty(item)}} // Connect to CartService.updateQuantity
-                  onRemove={() => {}}    // Connect to CartService.removeItem
+                  onUpdateQty={(qty) => {onUpdateQty(item.productId,qty)}} // Connect to CartService.updateQuantity
+                  onRemove={(id) => {removeItem(id)}}    // Connect to CartService.removeItem
                 />
               ))
             ) : (
