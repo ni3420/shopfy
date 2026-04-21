@@ -53,7 +53,8 @@ const Card = ({ product }) => {
 
         if (response) {
             toast.success(`${product.title} added!`, { id: toastId });
-            queryClient.invalidateQueries({ queryKey: ["item"] });
+            queryClient.invalidateQueries({ queryKey: ["item",user?.$id] });
+            queryClient.invalidateQueries({queryKey:["cart",user?.$id]})
         }
     } catch (error) {
         console.error(error);

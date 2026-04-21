@@ -46,21 +46,15 @@ const ProductDetails = () => {
         );
     }
 
-  const BuyNow=async()=>{
-      if (!user) {
-    toast.error("Please login to buy the Product");
-    
-    
-    navigate("/login", { state: { from: window.location.pathname } });
-    return;
-    
-  }
-  else{
-    navigate("/address", { state: { from: window.location.pathname } });
-    return;
-  }
-
-  }
+  const BuyNow = (product) => {
+  if (!user) return navigate('/login');
+  navigate('/checkout', { 
+    state: { 
+      checkoutItems: [{ ...product, quantity: 1 }], 
+      type: 'BUY_NOW' 
+    } 
+  });
+};
 
  
   const Carthandler = async (e) => {
@@ -169,7 +163,7 @@ const ProductDetails = () => {
                                 <button className="flex-1 bg-slate-900 dark:bg-emerald-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all active:scale-[0.98]" onClick={Carthandler}>
                                     Add to Cart
                                 </button>
-                                <button className="flex-1 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" onClick={BuyNow}>
+                                <button className="flex-1 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white py-4 rounded-xl font-bold text-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-all" onClick={()=>BuyNow(product)}>
                                     Buy Now
                                 </button>
                             </div>

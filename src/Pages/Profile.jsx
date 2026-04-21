@@ -3,6 +3,8 @@ import { User, Package, MapPin, Heart, Settings, LogOut, ChevronRight } from 'lu
 import { UseContextApi } from "../Context/UseContextApi";
 import authService from '../AppWrite/auth';
 import { Navigate } from 'react-router-dom';
+import AddressForm from './Address';
+import CartPage from './CartPage';
 
 const Profile = () => {
   const { user,  } = useContext(UseContextApi);
@@ -13,17 +15,17 @@ const Profile = () => {
     { id: 'Info', label: 'My Information', icon: <User size={20} /> },
     { id: 'Orders', label: 'My Orders', icon: <Package size={20} /> },
     { id: 'Addresses', label: 'Addresses', icon: <MapPin size={20} /> },
-    { id: 'Wishlist', label: 'Wishlist', icon: <Heart size={20} /> },
-    { id: 'Settings', label: 'Settings', icon: <Settings size={20} /> },
+    { id: 'Wishlist', label: 'Cart', icon: <Heart size={20} /> },
+    // { id: 'Settings', label: 'Settings', icon: <Settings size={20} /> },
   ];
 
   const renderContent = () => {
     switch (activeTab) {
       case 'Info': return <InfoView user={user} />;
-      case 'Orders': return <div className="p-6">Order History List...</div>;
-      case 'Addresses': return <div className="p-6">Manage Saved Addresses...</div>;
-      case 'Wishlist': return <div className="p-6">Your Favorite Items...</div>;
-      case 'Settings': return <div className="p-6">Account Settings...</div>;
+      case 'Orders': return <div className="p-6">Implement this Processing...</div>;
+      case 'Addresses': return <AddressForm/>;
+      case 'Cart': return <CartPage/>;
+      // case 'Settings': return <div className="p-6">Account Settings...</div>;
       default: return <InfoView user={user} />;
     }
   };

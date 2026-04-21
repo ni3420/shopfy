@@ -17,6 +17,8 @@ import AddressForm from './Pages/Address'
 import Layout from './Components/Layout'
 import Deals from './Pages/Deals'
 import Profile from './Pages/Profile'
+import CheckoutPage from './Pages/Checkout'
+import Error_page from './Pages/Error_page'
 
 const App = () => {
   // const {user}=useContext(UseContextApi)
@@ -37,6 +39,8 @@ const App = () => {
 <Route path='/profile' element={<AuthProtected><Profile/></AuthProtected>}/>
 <Route path='/address' element={<AuthProtected><AddressForm/></AuthProtected>}/>
 <Route path="/Products_details/:item/:id" element={<ProductDetails/>}/>
+<Route path='/checkout' element={<AuthProtected><CheckoutPage/></AuthProtected>}/>
+<Route path='*' element={<Error_page/>} />
 
 </Route>
 

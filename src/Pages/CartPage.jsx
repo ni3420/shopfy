@@ -62,22 +62,29 @@ const { mutate: removeItem } = useMutation({
   mutationFn: (productId) => cartService.removeByProductId(productId),
   
   onMutate: async (productId) => {
-    await queryClient.cancelQueries({ queryKey: ['cartItem'] });
-    const previousCart = queryClient.getQueryData(['cartItem']);
+    await queryClient.cancelQueries({ queryKey: ['cartItem', user?.$id] });
+    const previousCart = queryClient.getQueryData(['cartItem', user?.$id]);
 
-    queryClient.setQueryData(['cartItem'], (old) => 
-      old?.filter((item) => item.productId !== productId)
-    );
+    queryClient.setQueryData(['cartItem', user?.$id], (old) => {
+      if (!old) return previousCart;
+      return {
+        ...old,
+        documents: old.documents?.filter((item) => item.productId !== productId)
+      };
+    });
 
     return { previousCart };
   },
 
   onError: (err, variables, context) => {
-    queryClient.setQueryData(['cartItem'], context.previousCart);
+    if (context?.previousCart) {
+      queryClient.setQueryData(['cartItem', user?.$id], context.previousCart);
+    }
   },
 
   onSettled: () => {
-    queryClient.invalidateQueries({ queryKey: ['cartItem'] });
+    queryClient.invalidateQueries({ queryKey: ['cartItem', user?.$id] });
+    queryClient.invalidateQueries({queryKey:["cart",user?.$id]})
   }
 });
 

@@ -1,8 +1,9 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
-const OrderSummary = ({ subtotal, discount, delivery }) => {
+const OrderSummary = ({ subtotal, discount, delivery, }) => {
   const total = subtotal - discount + delivery;
-
+  const nav=useNavigate()
   return (
     <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm">
       <h2 className="text-xl font-black text-slate-900 dark:text-white mb-6">Order Summary</h2>
@@ -26,10 +27,10 @@ const OrderSummary = ({ subtotal, discount, delivery }) => {
         </div>
       </div>
 
-      <button className="w-full bg-slate-950 dark:bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all active:scale-[0.98] mb-3">
+      <button className="w-full bg-slate-950 dark:bg-emerald-600 text-white py-4 rounded-2xl font-bold hover:bg-slate-800 dark:hover:bg-emerald-500 transition-all active:scale-[0.98] mb-3" onClick={()=>alert("this part will be soon implement ...")}>
         Checkout Now
       </button>
-      <button className="w-full bg-transparent text-slate-500 dark:text-slate-400 py-3 rounded-2xl font-bold hover:text-slate-900 dark:hover:text-white transition-all">
+      <button className="w-full bg-transparent text-slate-500 dark:text-slate-400 py-3 rounded-2xl font-bold hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer" onClick={()=>nav("/")}>
         Continue Shopping
       </button>
     </div>
