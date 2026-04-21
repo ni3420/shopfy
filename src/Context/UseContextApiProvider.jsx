@@ -5,6 +5,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import authservice from "../AppWrite/auth"
 import { useState } from 'react'
 import toast from 'react-hot-toast'
+import Layout from '../Components/Layout'
+import LoadingSpinner from "../Components/LoadingSpinner"
 const api=async()=>{
     const res=await axios.get(`${confi.api_url}`)
     return res.data
@@ -48,7 +50,7 @@ if(isError)
 }
 if(isLoading)
 {
-    return <h1>Loading ...</h1>
+    return <LoadingSpinner/>
 }
 
   return (
@@ -57,5 +59,7 @@ if(isLoading)
     </UseContextApi.Provider>
   )
 }
+
+
 
 export default UseContextApiProvider
